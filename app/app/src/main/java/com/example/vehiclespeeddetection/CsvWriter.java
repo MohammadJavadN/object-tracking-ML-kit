@@ -56,28 +56,4 @@ public class CsvWriter {
         }
     }
 
-//    public static void saveHashMapToCsv(HashMap<Integer, ArrayList<Float>> map, String filePath) {
-//        try {
-//            FileWriter writer = new FileWriter(filePath);
-//
-//            for (Map.Entry<Integer, ArrayList<Float>> entry : map.entrySet()) {
-//                Integer key = entry.getKey();
-//                ArrayList<Float> values = entry.getValue();
-//
-//                StringBuilder line = new StringBuilder();
-//                line.append(key);
-//                for (Float value : values) {
-//                    line.append(",").append(value);
-//                }
-//                line.append("\n");
-//
-//                writer.append(line.toString());
-//            }
-//
-//            writer.flush();
-//            writer.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
 }

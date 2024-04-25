@@ -31,14 +31,16 @@ import org.opencv.core.Mat;
 
 import java.util.Locale;
 
-/** Draw the detected object info in preview. */
+/**
+ * Draw the detected object info in preview.
+ */
 public class ObjectGraphic extends Graphic {
 
     private static final float TEXT_SIZE = 30.0f;
     private static final float STROKE_WIDTH = 4.0f;
     private static final int NUM_COLORS = 10;
     private static final int[][] COLORS =
-            new int[][] {
+            new int[][]{
                     // {Text color, background color}
                     {Color.BLACK, Color.WHITE},
                     {Color.WHITE, Color.MAGENTA},
@@ -57,11 +59,9 @@ public class ObjectGraphic extends Graphic {
     private final Paint[] boxPaints;
     private final Paint[] textPaints;
     private final Paint[] labelPaints;
-    private final GraphicOverlay overlay;
+
     public ObjectGraphic(GraphicOverlay overlay, MyDetectedObject object) {
         super(overlay);
-
-        this.overlay = overlay;
 
         this.object = object;
 
@@ -106,11 +106,6 @@ public class ObjectGraphic extends Graphic {
             yLabelOffset -= 2 * lineHeight;
         }
 
-//        float w = canvas.getWidth();
-//        float h = canvas.getHeight();
-//        float sx = w / overlay.getImageWidth();
-//        float sy = h / overlay.getImageHeight();
-//        // Draws the bounding box.
         RectF rect = new RectF(object.getBoundingBox());
 
         float x0 = rect.left;

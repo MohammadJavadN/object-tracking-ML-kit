@@ -46,11 +46,11 @@ public class MyVideoEncoder {
 //    }
 
 
-    private MediaCodec encoder;
+    private final MediaCodec encoder;
     private MediaMuxer muxer;
     private int trackIndex;
     private boolean muxerStarted;
-    private File outputFile;
+    private final File outputFile;
 
     public MyVideoEncoder(int width, int height, int frameRate, String outputPath) throws IOException {
         // Create MediaFormat for video
@@ -70,12 +70,6 @@ public class MyVideoEncoder {
         muxerStarted = false;
     }
 
-//    public void startEncoder() throws IOException {
-//        encoder.start();
-//        muxer = new MediaMuxer(outputFile.getAbsolutePath(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-//        muxerStarted = true;
-//    }
-
     public void startEncoder() throws IOException {
         encoder.start();
         muxer = new MediaMuxer(outputFile.getAbsolutePath(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
@@ -92,17 +86,14 @@ public class MyVideoEncoder {
         muxer.release();
     }
 
-    public boolean isMuxerStarted(){
+    public boolean isMuxerStarted() {
         return muxerStarted;
     }
 
     public void encodeFrame(Bitmap bitmap) {
-//        System.out.println("%%% in encodeFrame");
         // Get input buffer index
         int inputBufferIndex = encoder.dequeueInputBuffer(0); // TODO: 23.04.24 0 -> -1 
-//        System.out.println("%%% " + inputBufferIndex);
         if (inputBufferIndex >= 0) {
-//            System.out.println("%%% if (inputBufferIndex >= 0)");
             // Get input buffer
             ByteBuffer inputBuffer = encoder.getInputBuffer(inputBufferIndex);
             // Clear input buffer
@@ -117,23 +108,18 @@ public class MyVideoEncoder {
             // Put byte array into input buffer
             inputBuffer.put(byteArray);
 
-//            System.out.println("%%% inputBuffer.put(byteArray);");
             // Queue input buffer
             encoder.queueInputBuffer(inputBufferIndex, 0, byteArray.length, System.nanoTime() / 1000, 0);
-//            System.out.println("%%% encoder.queueInputBuffer(");
         }
 
         MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
-//        System.out.println("%%%  new MediaCodec.BufferInfo();");
         int outputBufferIndex = encoder.dequeueOutputBuffer(bufferInfo, 0);
         while (outputBufferIndex >= 0) {
-//            System.out.println("%%% while (outputBufferIndex >= 0) ");
             ByteBuffer outputBuffer = encoder.getOutputBuffer(outputBufferIndex);
             assert outputBuffer != null;
             muxer.writeSampleData(trackIndex, outputBuffer, bufferInfo);
             encoder.releaseOutputBuffer(outputBufferIndex, false);
             outputBufferIndex = encoder.dequeueOutputBuffer(bufferInfo, 0);
-//            System.out.println("%%% outputBufferIndex");
         }
     }
 

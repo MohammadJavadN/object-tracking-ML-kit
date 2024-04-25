@@ -24,7 +24,8 @@ public class RoadLine {
     GraphicOverlay overlay;
     private Point point1, point2, point3, point4;
     private Point P1, P2, normalLineVector;
-    private double W1, W2, LineLength;
+    private double W1;
+    private double W2;
     private View circle1, circle2, circle3, circle4;
     private Matrix normToViewTransform;
 
@@ -164,7 +165,6 @@ public class RoadLine {
         P2 = new Point((point3.x + point4.x) / 2, (point3.y + point4.y) / 2);
         W1 = pow(d(point1, point2), 1);
         W2 = pow(d(point3, point4), 1);
-        LineLength = d(P1, P2);
         Point lineVector = new Point(P1.x - P2.x, P1.y - P2.y);
         normalLineVector = new Point(lineVector.x / norm(lineVector), lineVector.y / norm(lineVector));
     }
@@ -270,15 +270,5 @@ public class RoadLine {
         canvas.drawLine((int) (point2.x * sx), (int) (point2.y * sy), (int) (point4.x * sx), (int) (point4.y * sy), linePaint);
         canvas.drawCircle((float) (P1.x * sx), (float) (P1.y * sy), 15, linePaint);
         canvas.drawCircle((float) (P2.x * sx), (float) (P2.y * sy), 15, linePaint);
-
-//        canvas.drawLine((int) point3.x, (int) point3.y, (int) point1.x, (int) point1.y ,linePaint);
-//        canvas.drawLine((int) point2.x, (int) point2.y, (int) point4.x, (int) point4.y ,linePaint);
-//        canvas.drawCircle((float) P1.x, (float) P1.y, 15, linePaint);
-//        canvas.drawCircle((float) P2.x, (float) P2.y, 15, linePaint);
-
-//        System.out.println("c1: " + circle1.getX() + ", " + circle1.getY() + ", " + circle1.getWidth() + ", " + circle1.getHeight());
-//        System.out.println("c2: " + circle2.getX() + ", " + circle2.getY() + ", " + circle2.getWidth() + ", " + circle2.getHeight());
-//        System.out.println("c3: " + circle3.getX() + ", " + circle3.getY() + ", " + circle3.getWidth() + ", " + circle3.getHeight());
-//        System.out.println("c4: " + circle4.getX() + ", " + circle4.getY() + ", " + circle4.getWidth() + ", " + circle4.getHeight());
     }
 }

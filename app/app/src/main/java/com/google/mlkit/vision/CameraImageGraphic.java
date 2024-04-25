@@ -18,30 +18,23 @@ package com.google.mlkit.vision;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Matrix;
-import android.graphics.Paint;
 
-import com.example.vehiclespeeddetection.MainActivity;
 import com.google.mlkit.vision.GraphicOverlay.Graphic;
 
-import org.opencv.android.Utils;
-import org.opencv.core.Mat;
-
-/** Draw camera image to background. */
+/**
+ * Draw camera image to background.
+ */
 public class CameraImageGraphic extends Graphic {
 
-  private final Bitmap bitmap;
+    private final Bitmap bitmap;
 
-  public CameraImageGraphic(GraphicOverlay overlay, Bitmap bitmap) {
-    super(overlay);
-    this.bitmap = bitmap;
-  }
+    public CameraImageGraphic(GraphicOverlay overlay, Bitmap bitmap) {
+        super(overlay);
+        this.bitmap = bitmap;
+    }
 
-  @Override
-  public void draw(Canvas canvas) {
-//    int w = canvas.getWidth();
-//    int h = canvas.getHeight();
-//    Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, w, h, false);
-    canvas.drawBitmap(bitmap, 0, 0, null);
-  }
+    @Override
+    public void draw(Canvas canvas) {
+        canvas.drawBitmap(bitmap, 0, 0, null);
+    }
 }

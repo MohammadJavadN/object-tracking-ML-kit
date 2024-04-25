@@ -22,7 +22,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.common.moduleinstall.ModuleInstallClient;
 import com.google.mlkit.vision.GraphicOverlay;
 import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions;
 
@@ -30,15 +29,11 @@ import android.Manifest;
 import android.widget.Toast;
 
 import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.videoio.VideoCapture;
-import org.opencv.videoio.VideoWriter;
 import org.opencv.videoio.Videoio;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
@@ -48,23 +43,21 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements View.OnTouchListener {
-    ActivityResultLauncher<String> filechoser;
-
     public static final String TAG = "ObjectDetector";
+    private static final int PERMISSION_REQUEST_CODE = 100;
+    public static MyVideoEncoder out;
+    public static boolean isBusy = false;
     private static String inVideoPath = "/sdcard/Download/video(1).mp4";
     private static String outVideoPath = "/sdcard/Download/ou_.mp4";
-    private static String outCSVPath = "/sdcard/Download/out.csv";
-    private static final int maxFrames = 500;
-
+    private static final String outCSVPath = "/sdcard/Download/out.csv";
     private static VideoCapture cap;
-    public static MyVideoEncoder out;
-    private static final Scalar speedColor = new Scalar(255,0,0);
+    ActivityResultLauncher<String> filechoser;
     private ScheduledExecutorService scheduledExecutorService;
     private ObjectTrackerProcessor trackerProcessor;
-    ModuleInstallClient moduleInstallClient;
     private int frameNum;
     private GraphicOverlay graphicOverlay;
     private View circle1, circle2, circle3, circle4;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,28 +66,25 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         getPermission();
         init();
 
-//        surfaceView = findViewById(R.id.surfaceView);
         graphicOverlay = findViewById(R.id.overlayView);
 
         filechoser = registerForActivityResult(
                 new ActivityResultContracts.GetContent(),
                 o -> {
-                    String path = getRealPathFromURI(MainActivity.this, o); // TODO: uncomment
+                    String path = getRealPathFromURI(MainActivity.this, o);
                     if (path == null)
                         path = MainActivity.inVideoPath;
-                    if(new File(path).exists())
+                    if (new File(path).exists())
                         MainActivity.inVideoPath = path;
                     String[] paths = MainActivity.inVideoPath.split("/");
-                    paths[paths.length-1] = "output.mp4";
+                    paths[paths.length - 1] = "output.mp4";
                     MainActivity.outVideoPath = String.join("/", paths);
                     Toast.makeText(getApplicationContext(),
                             "out_path: " + outVideoPath,
                             Toast.LENGTH_LONG).show();
-//                    MainActivity.inVideoPath = getRealPathFromURI(MainActivity.this, o); // TODO: uncomment
                     System.out.println(MainActivity.inVideoPath);
 
                     // Start updating frames periodically
-//                    startUpdatingFrames();
                     findViewById(R.id.saveBtn).setVisibility(View.VISIBLE);
                     findViewById(R.id.browseBtn).setVisibility(View.GONE);
                     initializeSurface();
@@ -126,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     }
 
     private void initializeSurface() {
-            graphicOverlay.roadLine.initializeCircles(circle1, circle2, circle3, circle4);
+        graphicOverlay.roadLine.initializeCircles(circle1, circle2, circle3, circle4);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -138,9 +128,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 //            findViewById(R.id.floatingActionButton).setVisibility(View.VISIBLE);
         return true;
     }
-    private static final int PERMISSION_REQUEST_CODE = 100;
 
-    void getPermission(){
+    void getPermission() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -154,9 +143,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     PERMISSION_REQUEST_CODE);
-        }
-
-        else if (ContextCompat.checkSelfPermission(this,
+        } else if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_MEDIA_VIDEO)
                 != PackageManager.PERMISSION_GRANTED) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -164,9 +151,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                         new String[]{Manifest.permission.READ_MEDIA_VIDEO},
                         PERMISSION_REQUEST_CODE);
             }
-        }
-
-        else if (ContextCompat.checkSelfPermission(MainActivity.this,
+        } else if (ContextCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.INTERNET)
                 != PackageManager.PERMISSION_GRANTED) {
             System.out.println("*** has not internet access..");
@@ -177,7 +162,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         }
     }
 
-
     public void init() {
         System.loadLibrary("opencv_java4");
     }
@@ -185,7 +169,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     public void browseVideo(android.view.View view) {
         filechoser.launch("video/*");
     }
-
 
     public String getRealPathFromURI(Context context, Uri contentUri) {
         String filePath = null;
@@ -207,7 +190,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         return filePath;
     }
 
-    public static boolean isBusy = false;
     private void startProcess() {
         releaseResources();
 
@@ -252,7 +234,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
     }
 
-    private void releaseResources(){
+    private void releaseResources() {
         // Release resources
         if (cap != null && cap.isOpened())
             cap.release();
@@ -262,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             scheduledExecutorService.shutdown();
     }
 
-    private void initialInOutVideo(){
+    private void initialInOutVideo() {
         cap = new VideoCapture();
         cap.open(inVideoPath);
 
@@ -278,33 +260,14 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         }
         frameNum = 0;
 
-        RoadLine.globalCoeff *= (float) (fps/30);
+        RoadLine.globalCoeff *= (float) (fps / 30);
     }
 
-    private void initialParameters(Bitmap bitmap){
+    private void initialParameters(Bitmap bitmap) {
         graphicOverlay.setImageSourceInfo(bitmap.getWidth(), bitmap.getHeight(), false);
         trackerProcessor.DISTANCE_TH = (double) bitmap.getWidth() / 10;
         MyDetectedObject.imgWidth = bitmap.getWidth();
         MyDetectedObject.imgHeight = bitmap.getHeight();
-    }
-
-    public void updateFrameTaskFunc(){
-        Mat frame = new Mat();
-        boolean ret = cap.read(frame);
-        if (ret) {
-            frameNum++;
-            Bitmap bitmap = matToBitmap(frame);
-            graphicOverlay.setImageSourceInfo(frame.width(), frame.height(), false);
-
-//            System.out.println("^^^ calling trackerProcessor.detectInImage(image), frameNum=" + frameNum);
-            try {
-                trackerProcessor.processBitmap(bitmap, graphicOverlay);
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to process image. Error: " + e.getLocalizedMessage());
-                Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT)
-                        .show();
-            }
-        }
     }
 
     @Override
@@ -328,16 +291,14 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 //        System.out.println("in public void saveCsv(View view)");
         HashMap<Integer, HashMap<Integer, Float>> ObjectsSpeed = MyDetectedObject.getObjectsSpeed();
         Set<Integer> unnecessaryKey = new HashSet<>();
-        for (Integer key: ObjectsSpeed.keySet()) {
+        for (Integer key : ObjectsSpeed.keySet()) {
             if (Objects.requireNonNull(ObjectsSpeed.get(key)).isEmpty())
                 unnecessaryKey.add(key);
         }
 
-//        System.out.println("unnecessary key detected");
-        for (Integer key: unnecessaryKey) {
+        for (Integer key : unnecessaryKey) {
             ObjectsSpeed.remove(key);
         }
-//        System.out.println("removed unnecessary key");
         CsvWriter.saveHashMapToCsv(ObjectsSpeed, outCSVPath);
     }
 }
