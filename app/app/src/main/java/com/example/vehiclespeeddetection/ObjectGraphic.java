@@ -34,7 +34,7 @@ import java.util.Locale;
 /** Draw the detected object info in preview. */
 public class ObjectGraphic extends Graphic {
 
-    private static final float TEXT_SIZE = 54.0f;
+    private static final float TEXT_SIZE = 30.0f;
     private static final float STROKE_WIDTH = 4.0f;
     private static final int NUM_COLORS = 10;
     private static final int[][] COLORS =

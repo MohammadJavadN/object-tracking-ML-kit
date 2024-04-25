@@ -1,5 +1,12 @@
 package com.example.vehiclespeeddetection;
 
+import static java.lang.Math.log;
+import static java.lang.Math.log10;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+
 import android.graphics.Rect;
 import android.graphics.RectF;
 
@@ -25,7 +32,7 @@ public class MyDetectedObject extends DetectedObject{
     private static HashMap<Integer, HashMap<Integer, Float>> objectsSpeed = new HashMap<>();
     private static int nextId = 1;
     int id = -1;
-    int frameNum;
+    int frameNum, frameNumUpdated;
     private Rect boundingBox;
 
     @NonNull
@@ -60,16 +67,16 @@ public class MyDetectedObject extends DetectedObject{
         return ((int) (speed));
     }
 
-    public void updateBoxAndSpeed(Rect box){
-        System.out.println(box);
+    public void updateBoxAndSpeed(Rect box, int frameNum){
+//        System.out.println(box);
         RectF newLocation = new RectF(
                 box.left/imgWidth,
                 box.top/imgHeight,
                 box.right/imgWidth,
                 box.bottom/imgHeight
         );
-        System.out.println(newLocation + ", " + getCenter(newLocation));
-        System.out.println(location + ", " + getCenter(location));
+//        System.out.println(newLocation + ", " + getCenter(newLocation));
+//        System.out.println(location + ", " + getCenter(location));
 //        float tmpSpeed = GraphicOverlay.getOverlayInstance().roadLine.calculateSpeed(
 //                getCenter(location),
 //                getCenter(newLocation),
@@ -82,28 +89,40 @@ public class MyDetectedObject extends DetectedObject{
 //        );
 
         Point tmpSpeed = GraphicOverlay.getOverlayInstance().roadLine.calculateSignSpeed(
-                new Point(location.left, location.top), //getCenter(location),
-                new Point(newLocation.left, newLocation.top), //getCenter(newLocation),
-                1 //frameNum - this.frameNum
+                location,
+                newLocation,
+                frameNum - this.frameNumUpdated
         );
         speedVectors[speedCnt % SPEED_CNT] = tmpSpeed;
         speedCnt++;
+        float speed1 = speed;
         float lastSpeed = speed;
-        speed = 0;
-        int cnt = Math.min(speedCnt, SPEED_CNT);
+        speed1 = 0;
+        int cnt = min(speedCnt, SPEED_CNT);
         double speedX = 0, speedY = 0;
 
-        System.out.println("&&& id= " + id);
+//        System.out.println("&&& id= " + id);
         for (int i = 0; i < cnt; i++) {
             Point v = speedVectors[i];
-            System.out.println(v);
+//            System.out.println(v);
 //        for (Point v: speedVectors) {
             speedX += v.x;
             speedY += v.y;
         }
         speedX /= cnt;
         speedY /= cnt;
-        speed = (float) Math.sqrt(speedX * speedX + speedY * speedY) * 0.6f;
+        speed1 = (float) sqrt(speedX * speedX + speedY * speedY) * 0.6f;
+
+        double val1 = 90 - 40 * log10(900 / (speed1 - 10) - 12);
+        double val2 = 50 * log10(speed1/2);
+        speed = (float) min(max(0, val1), val2);
+//        System.out.println("&&&& " + speed1 + ", " + speed + ", " + val1 + ", " + val2);
+//        System.out.println(frameNum-this.frameNumUpdated);
+        if (speed < 10 || ((int) speed) < 20) {
+            speedCnt--;
+            speed = lastSpeed;
+            return;
+        }
 
 //        for (int i = 0; i < cnt; i++) {
 //            if ((speeds[i] < 0.8 * lastSpeed || speeds[i] > 1.2 * lastSpeed) && speed > 0)
@@ -115,8 +134,8 @@ public class MyDetectedObject extends DetectedObject{
         setLocation(newLocation);
 
         Objects.requireNonNull(objectsSpeed.get(id)).put(frameNum, speed);
-        this.frameNum++;
-//        this.frameNum = frameNum;
+//        this.frameNum++;
+        this.frameNumUpdated = frameNum;
     }
 
     float coef = 10000f;
@@ -124,9 +143,9 @@ public class MyDetectedObject extends DetectedObject{
         return distance(center, center1) * coef / frameNum;
     }
     private float distance(Point center, Point center1){
-        return (float) Math.sqrt(
-                Math.pow(center.x - center1.x, 2) +
-                        Math.pow(center.y - center1.y, 2)
+        return (float) sqrt(
+                pow(center.x - center1.x, 2) +
+                        pow(center.y - center1.y, 2)
         );
     }
     public MyDetectedObject(@NonNull Rect boundingBox, int frameNum) {
@@ -135,6 +154,7 @@ public class MyDetectedObject extends DetectedObject{
         setLocationInt(boundingBox);
         id = nextId;
         this.frameNum = frameNum;
+        this.frameNumUpdated = frameNum;
         nextId++;
         objectsSpeed.put(id, new HashMap<>());
     }

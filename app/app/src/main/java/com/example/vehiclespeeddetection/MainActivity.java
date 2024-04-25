@@ -112,19 +112,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         circle3.setOnTouchListener(this);
         circle4.setOnTouchListener(this);
 
-//        // Live detection and tracking
-//        ObjectDetectorOptions options =
-//                new ObjectDetectorOptions.Builder()
-//                        .setDetectorMode(ObjectDetectorOptions.STREAM_MODE)
-////                        .enableClassification()  // Optional
-//                        .build();
-//        ObjectDetectorOptions options =
-//                new ObjectDetectorOptions.Builder()
-//                        .setDetectorMode(ObjectDetectorOptions.STREAM_MODE)
-//                        .enableMultipleObjects()
-//                        .enableClassification()  // Optional
-//                        .build();
-//
         // Multiple object detection in static images
         ObjectDetectorOptions options =
                 new ObjectDetectorOptions.Builder()
@@ -135,117 +122,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
 
         trackerProcessor = new ObjectTrackerProcessor(this, options);
-
-/* ************************************************************************** */
-
-//        ProgressBar progressBar = findViewById(R.id.progressBar);
-//
-//        // Get an instance of ModuleInstallClient
-//        moduleInstallClient = ModuleInstall.getClient(this);
-//
-//        System.out.println("*** ModuleInstall.getClient(this); called");
-//
-//        // Check the availability of an optional module using its OptionalModuleApi
-//        OptionalModuleApi optionalModuleApi = TfLite.getClient(this);
-
-
-        // Live detection and tracking
-//        ObjectDetectorOptions options =
-//                new ObjectDetectorOptions.Builder()
-//                        .setDetectorMode(ObjectDetectorOptions.STREAM_MODE)
-//                        .enableClassification()  // Optional
-//                        .build();
-//        ObjectDetector objectDetector = ObjectDetection.getClient(options);
-//
-//        InputImage image = InputImage.fromBitmap(Bitmap.createBitmap(480, 360, Bitmap.Config.ARGB_8888), 0);
-//
-//        objectDetector.process(image)
-//                .addOnSuccessListener(
-//                        new OnSuccessListener<List<DetectedObject>>() {
-//                            @Override
-//                            public void onSuccess(List<DetectedObject> detectedObjects) {
-//                                // Task completed successfully
-//                                // ...
-//                                System.out.println("### on Success");
-//                                for (DetectedObject detectedObject : detectedObjects) {
-//                                    Rect boundingBox = detectedObject.getBoundingBox();
-//                                    Integer trackingId = detectedObject.getTrackingId();
-//                                    for (DetectedObject.Label label : detectedObject.getLabels()) {
-//                                        System.out.println("### label: " + label);
-//                                        String text = label.getText();
-//                                        if (PredefinedCategory.FOOD.equals(text)) {
-//                                            System.out.println("### PredefinedCategory.FOOD.equals(text)");
-//                                        }
-//                                        int index = label.getIndex();
-//                                        if (PredefinedCategory.FOOD_INDEX == index) {
-//                                            System.out.println("### PredefinedCategory.FOOD_INDEX == index");
-//                                        }
-//                                        float confidence = label.getConfidence();
-//                                    }
-//                                }
-//                            }
-//                        })
-//                .addOnFailureListener(
-//                        new OnFailureListener() {
-//                            @Override
-//                            public void onFailure(@NonNull Exception e) {
-//                                // Task failed with an exception
-//                                // ...
-//                                System.out.println("### on Failure");
-//                            }
-//                        });
-
-        //
-//        System.out.println("*** TfLite.getClient(this); called");
-//        moduleInstallClient
-//                .areModulesAvailable(optionalModuleApi)
-//                .addOnSuccessListener(
-//                        response -> {
-//                            System.out.println("*** in response -> {}");
-//                            if (response.areModulesAvailable()) {
-//                                // Modules are present on the device...
-//                                System.out.println("** in if (response.areModulesAvailable())");
-//                            } else {
-//                                // Modules are not present on the device...
-//                                System.out.println("*** in else (response.areModulesAvailable())");
-//                            }
-//                        })
-//                .addOnFailureListener(
-//                        e -> {
-//                            // Handle failure…
-//                            System.out.println("*** .addOnFailureListener(e -> {");
-//                        });
-//
-//        moduleInstallClient.deferredInstall(optionalModuleApi);
-//
-//        // Create an InstallStatusListener to handle the install status updates.
-//        InstallStatusListener listener = new ModuleInstallProgressListener(progressBar, moduleInstallClient);
-//
-//
-//        // Configure the ModuleInstallRequest and add the OptionalModuleApi to the request
-//        ModuleInstallRequest moduleInstallRequest =
-//                ModuleInstallRequest.newBuilder()
-//                        .addApi(optionalModuleApi)
-//                        // Add more API if you would like to request multiple optional modules
-////                        .addApi(...)
-//                        // Set the listener if you need to monitor the download progress
-//                        //.setListener(listener)
-//                        .build();
-//
-//        // Send the install request
-//        moduleInstallClient.installModules(moduleInstallRequest)
-//                .addOnSuccessListener(
-//                        response -> {
-//                            if (response.areModulesAlreadyInstalled()) {
-//                                // Modules are already installed when the request is sent.
-//                                System.out.println("*** areModulesAlreadyInstalled()");
-//                            }
-//                        })
-//                .addOnFailureListener(
-//                        e -> {
-//                            // Handle failure...
-//                            System.out.println("installModules -> OnFailureListener");
-//                        });
 
     }
 
@@ -420,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             Bitmap bitmap = matToBitmap(frame);
             graphicOverlay.setImageSourceInfo(frame.width(), frame.height(), false);
 
-            System.out.println("^^^ calling trackerProcessor.detectInImage(image), frameNum=" + frameNum);
+//            System.out.println("^^^ calling trackerProcessor.detectInImage(image), frameNum=" + frameNum);
             try {
                 trackerProcessor.processBitmap(bitmap, graphicOverlay);
             } catch (Exception e) {
@@ -449,7 +325,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
 
     public void saveCsv(View view) {
-        System.out.println("in public void saveCsv(View view)");
+//        System.out.println("in public void saveCsv(View view)");
         HashMap<Integer, HashMap<Integer, Float>> ObjectsSpeed = MyDetectedObject.getObjectsSpeed();
         Set<Integer> unnecessaryKey = new HashSet<>();
         for (Integer key: ObjectsSpeed.keySet()) {
@@ -457,11 +333,11 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 unnecessaryKey.add(key);
         }
 
-        System.out.println("unnecessary key detected");
+//        System.out.println("unnecessary key detected");
         for (Integer key: unnecessaryKey) {
             ObjectsSpeed.remove(key);
         }
-        System.out.println("removed unnecessary key");
+//        System.out.println("removed unnecessary key");
         CsvWriter.saveHashMapToCsv(ObjectsSpeed, outCSVPath);
     }
 }

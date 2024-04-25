@@ -97,12 +97,12 @@ public class MyVideoEncoder {
     }
 
     public void encodeFrame(Bitmap bitmap) {
-        System.out.println("%%% in encodeFrame");
+//        System.out.println("%%% in encodeFrame");
         // Get input buffer index
         int inputBufferIndex = encoder.dequeueInputBuffer(0); // TODO: 23.04.24 0 -> -1 
-        System.out.println("%%% " + inputBufferIndex);
+//        System.out.println("%%% " + inputBufferIndex);
         if (inputBufferIndex >= 0) {
-            System.out.println("%%% if (inputBufferIndex >= 0)");
+//            System.out.println("%%% if (inputBufferIndex >= 0)");
             // Get input buffer
             ByteBuffer inputBuffer = encoder.getInputBuffer(inputBufferIndex);
             // Clear input buffer
@@ -117,23 +117,23 @@ public class MyVideoEncoder {
             // Put byte array into input buffer
             inputBuffer.put(byteArray);
 
-            System.out.println("%%% inputBuffer.put(byteArray);");
+//            System.out.println("%%% inputBuffer.put(byteArray);");
             // Queue input buffer
             encoder.queueInputBuffer(inputBufferIndex, 0, byteArray.length, System.nanoTime() / 1000, 0);
-            System.out.println("%%% encoder.queueInputBuffer(");
+//            System.out.println("%%% encoder.queueInputBuffer(");
         }
 
         MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
-        System.out.println("%%%  new MediaCodec.BufferInfo();");
+//        System.out.println("%%%  new MediaCodec.BufferInfo();");
         int outputBufferIndex = encoder.dequeueOutputBuffer(bufferInfo, 0);
         while (outputBufferIndex >= 0) {
-            System.out.println("%%% while (outputBufferIndex >= 0) ");
+//            System.out.println("%%% while (outputBufferIndex >= 0) ");
             ByteBuffer outputBuffer = encoder.getOutputBuffer(outputBufferIndex);
             assert outputBuffer != null;
             muxer.writeSampleData(trackIndex, outputBuffer, bufferInfo);
             encoder.releaseOutputBuffer(outputBufferIndex, false);
             outputBufferIndex = encoder.dequeueOutputBuffer(bufferInfo, 0);
-            System.out.println("%%% outputBufferIndex");
+//            System.out.println("%%% outputBufferIndex");
         }
     }
 

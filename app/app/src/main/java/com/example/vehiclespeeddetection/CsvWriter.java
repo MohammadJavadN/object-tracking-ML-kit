@@ -12,42 +12,42 @@ public class CsvWriter {
         try {
             FileWriter writer = new FileWriter(filePath);
 
-//            for (Map.Entry<Integer, HashMap<Integer, Float>> entry : map.entrySet()) {
-//                Integer outerKey = entry.getKey();
-//                HashMap<Integer, Float> innerMap = entry.getValue();
-//
-//                for (Map.Entry<Integer, Float> innerEntry : innerMap.entrySet()) {
-//                    Integer innerKey = innerEntry.getKey();
-//                    Float value = innerEntry.getValue();
-//
-//                    writer.append(outerKey.toString())
-//                            .append(",")
-//                            .append(innerKey.toString())
-//                            .append(",")
-//                            .append(value.toString())
-//                            .append("\n");
-//                }
-//            }
-
             for (Map.Entry<Integer, HashMap<Integer, Float>> entry : map.entrySet()) {
                 Integer outerKey = entry.getKey();
                 HashMap<Integer, Float> innerMap = entry.getValue();
-                writer.append(outerKey.toString())
-                        .append(",");
-                int cnt = 0;
+
                 for (Map.Entry<Integer, Float> innerEntry : innerMap.entrySet()) {
                     Integer innerKey = innerEntry.getKey();
                     Float value = innerEntry.getValue();
-                    while (cnt < innerKey) {
-                        writer.append(",");
-                        cnt++;
-                    }
-                    writer.append(value.toString());
-//                            .append("\n");
-                }
-                writer.append("\n");
 
+                    writer.append(outerKey.toString())
+                            .append(",")
+                            .append(innerKey.toString())
+                            .append(",")
+                            .append(value.toString())
+                            .append("\n");
+                }
             }
+
+//            for (Map.Entry<Integer, HashMap<Integer, Float>> entry : map.entrySet()) {
+//                Integer outerKey = entry.getKey();
+//                HashMap<Integer, Float> innerMap = entry.getValue();
+//                writer.append(outerKey.toString())
+//                        .append(",");
+//                int cnt = 0;
+//                for (Map.Entry<Integer, Float> innerEntry : innerMap.entrySet()) {
+//                    Integer innerKey = innerEntry.getKey();
+//                    Float value = innerEntry.getValue();
+//                    while (cnt < innerKey) {
+//                        writer.append(",");
+//                        cnt++;
+//                    }
+//                    writer.append(value.toString());
+////                            .append("\n");
+//                }
+//                writer.append("\n");
+//
+//            }
 
             writer.flush();
             writer.close();

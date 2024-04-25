@@ -31,7 +31,7 @@ public class ObjectTrackerProcessor extends VisionProcessorBase<List<DetectedObj
 
     public ObjectTrackerProcessor(Context context, ObjectDetectorOptionsBase options) {
         super(context);
-        System.out.println("*** 34 of ObjectTrackerProcessor class");
+//        System.out.println("*** 34 of ObjectTrackerProcessor class");
         detector = ObjectDetection.getClient(options);
         frameNum = 0;
         prevObjects = new ArrayList<>();
@@ -45,7 +45,7 @@ public class ObjectTrackerProcessor extends VisionProcessorBase<List<DetectedObj
 
     @Override
     protected Task<List<DetectedObject>> detectInImage(InputImage image) {
-        System.out.println("^^^ Task<List<DetectedObject>> detectInImage(InputImage image)");
+//        System.out.println("^^^ Task<List<DetectedObject>> detectInImage(InputImage image)");
 //        Task<List<DetectedObject>>
         return detector.process(image);
     }
@@ -113,7 +113,7 @@ public class ObjectTrackerProcessor extends VisionProcessorBase<List<DetectedObj
     private void updateObj(int id, DetectedObject object){
         for (MyDetectedObject prevObj: prevObjects) {
             if (prevObj.id == id) {
-                prevObj.updateBoxAndSpeed(object.getBoundingBox());
+                prevObj.updateBoxAndSpeed(object.getBoundingBox(), frameNum);
 //                prevObj.setBoundingBox(object.getBoundingBox());
                 prevObj.frameNum = frameNum;
                 break;

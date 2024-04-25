@@ -104,7 +104,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
   private FrameMetadata processingMetaData;
 
   protected VisionProcessorBase(Context context) {
-    System.out.println("^^^ VisionProcessorBase line 105 protected VisionProcessorBase(Context context)");
+    // System.out.println("^^^ VisionProcessorBase line 105 protected VisionProcessorBase(Context context)");
     activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
     executor = new ScopedExecutor(TaskExecutors.MAIN_THREAD);
     fpsTimer.scheduleAtFixedRate(
@@ -124,7 +124,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
   // -----------------Code for processing single still image----------------------------------------
   @Override
   public void processBitmap(Bitmap bitmap, final GraphicOverlay graphicOverlay) {
-    System.out.println("^^^ line 124 public void processBitmap(Bitmap bitmap, final GraphicOverlay graphicOverlay) ");
+    // System.out.println("^^^ line 124 public void processBitmap(Bitmap bitmap, final GraphicOverlay graphicOverlay) ");
     long frameStartMs = SystemClock.elapsedRealtime();
 
     if (isMlImageEnabled(graphicOverlay.getContext())) {
@@ -171,7 +171,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
 
   private void processImage(
       ByteBuffer data, final FrameMetadata frameMetadata, final GraphicOverlay graphicOverlay) {
-    System.out.println("^^^ line 171 private void processImage(");
+    // System.out.println("^^^ line 171 private void processImage(");
     long frameStartMs = SystemClock.elapsedRealtime();
 
     // If live viewport is on (that is the underneath surface view takes care of the camera preview
@@ -269,7 +269,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
       @Nullable final Bitmap originalCameraImage,
       boolean shouldShowFps,
       long frameStartMs) {
-    System.out.println("^^^ line 269 private Task<T> requestDetectInImage(");
+    // System.out.println("^^^ line 269 private Task<T> requestDetectInImage(");
 
     return setUpListener(
             detectInImage(image), graphicOverlay, originalCameraImage, shouldShowFps, frameStartMs);
@@ -282,7 +282,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
       @Nullable final Bitmap originalCameraImage,
       boolean shouldShowFps,
       long frameStartMs) {
-    System.out.println("^^^ line 280 private Task<T> requestDetectInImage(");
+    // System.out.println("^^^ line 280 private Task<T> requestDetectInImage(");
     return setUpListener(
         detectInImage(image), graphicOverlay, originalCameraImage, shouldShowFps, frameStartMs);
   }
@@ -293,12 +293,12 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
       @Nullable final Bitmap originalCameraImage,
       boolean shouldShowFps,
       long frameStartMs) {
-    System.out.println("^^^ line 291 private Task<T> setUpListener(");
+    // System.out.println("^^^ line 291 private Task<T> setUpListener(");
     final long detectorStartMs = SystemClock.elapsedRealtime();
     return task.addOnSuccessListener(
             executor,
             results -> {
-              System.out.println("^^^  task.addOnSuccessListener(results -> {");
+              // System.out.println("^^^  task.addOnSuccessListener(results -> {");
               long endMs = SystemClock.elapsedRealtime();
               long currentFrameLatencyMs = endMs - frameStartMs;
               long currentDetectorLatencyMs = endMs - detectorStartMs;
@@ -343,13 +343,13 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
 
               graphicOverlay.clear();
               if (originalCameraImage != null) {
-                System.out.println("^^^ line 343 if (originalCameraImage != null) ");
+                // System.out.println("^^^ line 343 if (originalCameraImage != null) ");
                 graphicOverlay.add(new CameraImageGraphic(graphicOverlay, originalCameraImage));
-                System.out.println("^^^ added");
+                // System.out.println("^^^ added");
               }
               VisionProcessorBase.this.onSuccess(results, graphicOverlay);
               if (!PreferenceUtils.shouldHideDetectionInfo(graphicOverlay.getContext())) {
-                System.out.println("^^^ !PreferenceUtils.shouldHideDetectionInfo(graphicOverlay.getContext())");
+                // System.out.println("^^^ !PreferenceUtils.shouldHideDetectionInfo(graphicOverlay.getContext())");
                 graphicOverlay.add(
                     new InferenceInfoGraphic(
                         graphicOverlay,
@@ -363,13 +363,13 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
 
             })
 //            .addOnCompleteListener(executor, e -> {
-//              System.out.println("^^^ .addOnCompleteListener(executor, e -> {");
+//              // System.out.println("^^^ .addOnCompleteListener(executor, e -> {");
 //              ((MainActivity) context).updateFrameTaskFunc();
 //            })
         .addOnFailureListener(
             executor,
             e -> {
-              System.out.println("^^^  task.addOnFailureListener(e -> {");
+              // System.out.println("^^^  task.addOnFailureListener(e -> {");
 
               graphicOverlay.clear();
               graphicOverlay.postInvalidate();
@@ -387,7 +387,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
 
   @Override
   public void stop() {
-    System.out.println("^^^ line 372 public void stop() {");
+    // System.out.println("^^^ line 372 public void stop() {");
     executor.shutdown();
     isShutdown = true;
     resetLatencyStats();
@@ -396,7 +396,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
   }
 
   private void resetLatencyStats() {
-    System.out.println("^^^ line 381 private void resetLatencyStats() {");
+    // System.out.println("^^^ line 381 private void resetLatencyStats() {");
     numRuns = 0;
     totalFrameMs = 0;
     maxFrameMs = 0;
@@ -409,7 +409,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
   protected abstract Task<T> detectInImage(InputImage image);
 
   protected Task<T> detectInImage(MlImage image) {
-    System.out.println("^^^ line 394 protected Task<T> detectInImage(MlImage image) {");
+    // System.out.println("^^^ line 394 protected Task<T> detectInImage(MlImage image) {");
     return Tasks.forException(
         new MlKitException(
             "MlImage is currently not demonstrated for this feature",
