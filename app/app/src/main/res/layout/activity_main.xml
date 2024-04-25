@@ -53,20 +53,6 @@
         android:layout_marginBottom="60dp"
         android:scaleType="fitXY" />
 
-<!--    <ProgressBar-->
-<!--        android:id="@+id/progressBar"-->
-<!--        style="?android:attr/progressBarStyleHorizontal"-->
-<!--        android:layout_width="284dp"-->
-<!--        android:layout_height="20dp"-->
-<!--        android:layout_alignParentBottom="true"-->
-<!--        android:layout_marginBottom="99dp"-->
-<!--        tools:layout_editor_absoluteX="75dp"-->
-<!--        tools:layout_editor_absoluteY="673dp"-->
-<!--        android:layout_centerHorizontal="true"-->
-<!--        android:visibility="gone"-->
-<!--        />-->
-
-
     <View
         android:id="@+id/circle1"
         android:layout_width="25dp"
@@ -110,5 +96,17 @@
         android:layout_marginTop="453dp"
         android:background="@drawable/circle_shape"
         android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/changBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/title"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="34dp"
+        android:layout_toStartOf="@+id/saveBtn"
+        android:onClick="changeCircles"
+        android:text="@string/change_circles"
+        android:visibility="invisible"/>
 
 </RelativeLayout>

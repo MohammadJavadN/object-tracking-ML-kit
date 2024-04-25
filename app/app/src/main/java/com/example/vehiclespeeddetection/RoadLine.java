@@ -33,7 +33,7 @@ public class RoadLine {
         this.overlay = overlay;
     }
 
-    private static void setCirclesTop(View circle1, View circle2, View circle3, View circle4) {
+    public static void setCirclesTop(View circle1, View circle2, View circle3, View circle4) {
         circle1.setX(652);
         circle1.setY(745);
 
@@ -48,7 +48,7 @@ public class RoadLine {
 
     }
 
-    private static void setCirclesSide1(View circle1, View circle2, View circle3, View circle4) {
+    public static void setCirclesSide1(View circle1, View circle2, View circle3, View circle4) {
         circle1.setX(1653);
         circle1.setY(1218);
 
@@ -63,7 +63,7 @@ public class RoadLine {
 
     }
 
-    private static void setCirclesSide2(View circle1, View circle2, View circle3, View circle4) {
+    public static void setCirclesSide2(View circle1, View circle2, View circle3, View circle4) {
         circle1.setX(1417);
         circle1.setY(1074);
 

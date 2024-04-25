@@ -117,6 +117,24 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
     private void initializeSurface() {
         graphicOverlay.roadLine.initializeCircles(circle1, circle2, circle3, circle4);
+        findViewById(R.id.changBtn).setVisibility(View.VISIBLE);
+    }
+
+    static int state = 1;
+    static final int STATE = 3;
+    public void changeCircles(android.view.View view){
+        switch (state){
+            case 0:
+                RoadLine.setCirclesTop(circle1, circle2, circle3, circle4);
+                break;
+            case 1:
+                RoadLine.setCirclesSide1(circle1, circle2, circle3, circle4);
+                break;
+            case 2:
+                RoadLine.setCirclesSide2(circle1, circle2, circle3, circle4);
+                break;
+        }
+        state = (state + 1) % STATE;
     }
 
     @SuppressLint("ClickableViewAccessibility")
