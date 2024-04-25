@@ -16,10 +16,16 @@
 
 package com.google.mlkit.vision;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import androidx.annotation.Nullable;
+
+import com.example.vehiclespeeddetection.MainActivity;
+
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
 
 /** Graphic instance for rendering inference info (latency, FPS, resolution) in an overlay view. */
 public class InferenceInfoGraphic extends GraphicOverlay.Graphic {

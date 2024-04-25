@@ -27,11 +27,22 @@
         android:layout_centerHorizontal="true"
         android:onClick="browseVideo"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/save"
+        android:layout_below="@id/title"
+        android:id="@+id/saveBtn"
+        android:layout_marginTop="10dp"
+        android:layout_centerHorizontal="true"
+        android:onClick="saveCsv"
+        android:visibility="invisible"/>
+
     <com.google.mlkit.vision.GraphicOverlay
         android:id="@+id/overlayView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/browseBtn"
+        android:layout_below="@+id/saveBtn"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginStart="20dp"

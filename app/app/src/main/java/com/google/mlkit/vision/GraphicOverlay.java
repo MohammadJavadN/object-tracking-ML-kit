@@ -19,6 +19,7 @@ package com.google.mlkit.vision;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -83,7 +84,7 @@ public class GraphicOverlay extends View {
    * instances to the overlay using {@link GraphicOverlay#add(Graphic)}.
    */
   public abstract static class Graphic {
-    private GraphicOverlay overlay;
+    private final GraphicOverlay overlay;
 
     public Graphic(GraphicOverlay overlay) {
       this.overlay = overlay;
@@ -316,21 +317,47 @@ public class GraphicOverlay extends View {
 
 //  public int viewH, viewW;
   public RoadLine roadLine;
+  private Bitmap bitmap;
+  public boolean isValidBitmap = false;
+  public Bitmap getBitmap() {
+    return bitmap;
+  }
 
   /** Draws the overlay with its associated graphic objects. */
+  @SuppressLint("DrawAllocation")
   @Override
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
 //    Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
 //    canvas.setBitmap(bitmap);
+
     synchronized (lock) {
       updateTransformationIfNeeded();
+      if (overlay.getImageWidth() <= 0)
+        return;
+      System.out.println("*** width = " + overlay.getImageWidth() + ", " + overlay.getImageHeight());
+      bitmap = Bitmap.createBitmap(overlay.getImageWidth(), overlay.getImageHeight(), Bitmap.Config.ARGB_8888);
+      Canvas canvasForFrame = new Canvas(bitmap);
 
       for (Graphic graphic : graphics) {
-        graphic.draw(canvas);
+        graphic.draw(canvasForFrame);
       }
-      roadLine.drawLines(canvas);
+      roadLine.drawLines(canvasForFrame);
 
+      isValidBitmap = true;
+
+//      // Convert bitmap to Mat
+//      Mat frameMat = new Mat();
+//      Utils.bitmapToMat(bitmap, frameMat);
+
+      // Write the Mat to video
+//      MainActivity.out.encodeFrame(bitmap);
+
+      int w = getWidth();
+      int h = getHeight();
+      Bitmap viewBitmap = Bitmap.createScaledBitmap(bitmap, w, h, true);
+
+      canvas.drawBitmap(viewBitmap, 0, 0, new Paint());
 //      Canvas canvas = new Canvas(bitmap);
 
       // Draw the content of the canvas

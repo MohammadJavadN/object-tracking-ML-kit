@@ -1,0 +1,8 @@
+/app/.idea/
+/app/app/proguard-rules.pro
+/app/openCV/build/
+/app/openCV/etc/
+/app/openCV/java/
+/app/openCV/libcxx_helper/
+/app/openCV/native/
+

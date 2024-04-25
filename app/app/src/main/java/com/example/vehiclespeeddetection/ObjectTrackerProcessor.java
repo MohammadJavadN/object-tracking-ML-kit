@@ -27,7 +27,7 @@ public class ObjectTrackerProcessor extends VisionProcessorBase<List<DetectedObj
 
     private final ObjectDetector detector;
     private int frameNum;
-    private List<MyDetectedObject> prevObjects;
+    private final List<MyDetectedObject> prevObjects;
 
     public ObjectTrackerProcessor(Context context, ObjectDetectorOptionsBase options) {
         super(context);

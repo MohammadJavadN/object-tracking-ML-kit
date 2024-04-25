@@ -12,9 +12,17 @@ import com.google.mlkit.vision.objects.DetectedObject;
 import org.opencv.core.Point;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 public class MyDetectedObject extends DetectedObject{
+
+    public static HashMap<Integer, HashMap<Integer, Float>> getObjectsSpeed() {
+        return objectsSpeed;
+    }
+
+    private static HashMap<Integer, HashMap<Integer, Float>> objectsSpeed = new HashMap<>();
     private static int nextId = 1;
     int id = -1;
     int frameNum;
@@ -29,8 +37,8 @@ public class MyDetectedObject extends DetectedObject{
 //        this.boundingBox = new Rect(boundingBox);
 //    }
     private final int SPEED_CNT = 15;
-    private float[] speeds = new float[SPEED_CNT];
-    private Point[] speedVectors = new Point[SPEED_CNT];
+    private final float[] speeds = new float[SPEED_CNT];
+    private final Point[] speedVectors = new Point[SPEED_CNT];
     private int speedCnt = 0;
     private float speed;
     protected RectF location;
@@ -105,6 +113,9 @@ public class MyDetectedObject extends DetectedObject{
 //        }
 
         setLocation(newLocation);
+
+        Objects.requireNonNull(objectsSpeed.get(id)).put(frameNum, speed);
+        this.frameNum++;
 //        this.frameNum = frameNum;
     }
 
@@ -125,14 +136,15 @@ public class MyDetectedObject extends DetectedObject{
         id = nextId;
         this.frameNum = frameNum;
         nextId++;
+        objectsSpeed.put(id, new HashMap<>());
     }
 
     public void setLocationInt(Rect locationInt) {
         this.boundingBox = locationInt;
-        this.location = new RectF(locationInt.left / (float) imgWidth,
-                locationInt.top / (float) imgHeight,
-                locationInt.right / (float) imgWidth,
-                locationInt.bottom / (float) imgHeight);
+        this.location = new RectF(locationInt.left / imgWidth,
+                locationInt.top / imgHeight,
+                locationInt.right / imgWidth,
+                locationInt.bottom / imgHeight);
     }
     public Integer getTrackingId() {
         return this.id; // TODO: 22.04.24 int to Integer

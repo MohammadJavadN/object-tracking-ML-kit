@@ -7,9 +7,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Matrix;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,35 +14,17 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ProgressBar;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import com.google.android.gms.common.api.OptionalModuleApi;
-import com.google.android.gms.common.moduleinstall.InstallStatusListener;
-import com.google.android.gms.common.moduleinstall.ModuleInstall;
 import com.google.android.gms.common.moduleinstall.ModuleInstallClient;
-import com.google.android.gms.common.moduleinstall.ModuleInstallRequest;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tflite.java.TfLite;
-import com.google.mlkit.common.MlKitException;
 import com.google.mlkit.vision.GraphicOverlay;
-import com.google.mlkit.vision.common.InputImage;
-import com.google.mlkit.vision.objects.DetectedObject;
-import com.google.mlkit.vision.objects.ObjectDetection;
-import com.google.mlkit.vision.objects.ObjectDetector;
 import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions;
-import com.google.mlkit.vision.objects.defaults.PredefinedCategory;
 
 import android.Manifest;
 import android.widget.Toast;
@@ -58,7 +37,12 @@ import org.opencv.videoio.VideoWriter;
 import org.opencv.videoio.Videoio;
 
 import java.io.File;
-import java.util.List;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -69,10 +53,11 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     public static final String TAG = "ObjectDetector";
     private static String inVideoPath = "/sdcard/Download/video(1).mp4";
     private static String outVideoPath = "/sdcard/Download/ou_.mp4";
-    private static int maxFrames = 500;
+    private static String outCSVPath = "/sdcard/Download/out.csv";
+    private static final int maxFrames = 500;
 
     private static VideoCapture cap;
-    public static VideoWriter out;
+    public static MyVideoEncoder out;
     private static final Scalar speedColor = new Scalar(255,0,0);
     private ScheduledExecutorService scheduledExecutorService;
     private ObjectTrackerProcessor trackerProcessor;
@@ -110,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
                     // Start updating frames periodically
 //                    startUpdatingFrames();
+                    findViewById(R.id.saveBtn).setVisibility(View.VISIBLE);
+                    findViewById(R.id.browseBtn).setVisibility(View.GONE);
                     initializeSurface();
                     startProcess();
                 }
@@ -346,40 +333,26 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
     public static boolean isBusy = false;
     private void startProcess() {
-        // Release resources
-        if (cap != null && cap.isOpened())
-            cap.release();
-        if (out != null && out.isOpened())
-            out.release();
-        if (scheduledExecutorService != null)
-            scheduledExecutorService.shutdown();
+        releaseResources();
 
-        cap = new VideoCapture();
-        cap.open(inVideoPath);
-        int fourcc = VideoWriter.fourcc('m', 'p', '4', 'v');
-        double fps = cap.get(Videoio.CAP_PROP_FPS);
-        RoadLine.globalCoeff *= (float) (fps/30);
-        int width = (int) cap.get(Videoio.CAP_PROP_FRAME_WIDTH);
-        int height = (int) cap.get(Videoio.CAP_PROP_FRAME_HEIGHT);
-        out = new VideoWriter(outVideoPath, fourcc, fps, new Size(width, height));
+        initialInOutVideo();
 
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        frameNum = 0;
-        // Render the frame onto the canvas
-//        Runnable updateFrameTask = this::updateFrameTaskFunc;
+
         Runnable updateFrameTask = () -> {
             if (!isBusy) {
+                if (graphicOverlay.isValidBitmap)
+                    out.encodeFrame(graphicOverlay.getBitmap());
+
                 Mat frame = new Mat();
                 boolean ret = cap.read(frame);
                 if (ret) {
-                    frameNum++;
                     Bitmap bitmap = matToBitmap(frame);
 
-                    graphicOverlay.setImageSourceInfo(bitmap.getWidth(), bitmap.getHeight(), false);
-                    trackerProcessor.DISTANCE_TH = (double) bitmap.getWidth() / 10;
-                    MyDetectedObject.imgWidth = bitmap.getWidth();
-                    MyDetectedObject.imgHeight = bitmap.getHeight();
-                    System.out.println("^^^ calling trackerProcessor.detectInImage(image), frameNum=" + frameNum);
+                    if (frameNum == 0)
+                        initialParameters(bitmap);
+
+                    frameNum++;
                     try {
                         isBusy = true;
                         trackerProcessor.processBitmap(bitmap, graphicOverlay);
@@ -388,8 +361,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                         Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT)
                                 .show();
                     }
-
-
                 } else
                     onDestroy();
             }
@@ -405,6 +376,41 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
     }
 
+    private void releaseResources(){
+        // Release resources
+        if (cap != null && cap.isOpened())
+            cap.release();
+        if (out != null && out.isMuxerStarted())
+            out.stopEncoder();
+        if (scheduledExecutorService != null)
+            scheduledExecutorService.shutdown();
+    }
+
+    private void initialInOutVideo(){
+        cap = new VideoCapture();
+        cap.open(inVideoPath);
+
+        double fps = cap.get(Videoio.CAP_PROP_FPS);
+        int width = (int) cap.get(Videoio.CAP_PROP_FRAME_WIDTH);
+        int height = (int) cap.get(Videoio.CAP_PROP_FRAME_HEIGHT);
+
+        try {
+            out = new MyVideoEncoder(width, height, (int) fps, outVideoPath);
+            out.startEncoder();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        frameNum = 0;
+
+        RoadLine.globalCoeff *= (float) (fps/30);
+    }
+
+    private void initialParameters(Bitmap bitmap){
+        graphicOverlay.setImageSourceInfo(bitmap.getWidth(), bitmap.getHeight(), false);
+        trackerProcessor.DISTANCE_TH = (double) bitmap.getWidth() / 10;
+        MyDetectedObject.imgWidth = bitmap.getWidth();
+        MyDetectedObject.imgHeight = bitmap.getHeight();
+    }
 
     public void updateFrameTaskFunc(){
         Mat frame = new Mat();
@@ -429,16 +435,33 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     protected void onDestroy() {
         super.onDestroy();
         // Release resources
-//        if (MainActivity.cap != null && MainActivity.cap.isOpened())
-//            MainActivity.cap.release();
-//        if (MainActivity.out != null && MainActivity.out.isOpened())
-//            MainActivity.out.release();
+        if (MainActivity.cap != null && MainActivity.cap.isOpened())
+            MainActivity.cap.release();
+        if (out != null && out.isMuxerStarted())
+            out.stopEncoder();
 
         if (scheduledExecutorService != null) {
             scheduledExecutorService.shutdown();
         }
+
+
     }
 
 
+    public void saveCsv(View view) {
+        System.out.println("in public void saveCsv(View view)");
+        HashMap<Integer, HashMap<Integer, Float>> ObjectsSpeed = MyDetectedObject.getObjectsSpeed();
+        Set<Integer> unnecessaryKey = new HashSet<>();
+        for (Integer key: ObjectsSpeed.keySet()) {
+            if (Objects.requireNonNull(ObjectsSpeed.get(key)).isEmpty())
+                unnecessaryKey.add(key);
+        }
 
+        System.out.println("unnecessary key detected");
+        for (Integer key: unnecessaryKey) {
+            ObjectsSpeed.remove(key);
+        }
+        System.out.println("removed unnecessary key");
+        CsvWriter.saveHashMapToCsv(ObjectsSpeed, outCSVPath);
+    }
 }

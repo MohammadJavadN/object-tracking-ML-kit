@@ -15,6 +15,7 @@
  */
 package com.example.vehiclespeeddetection;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -24,6 +25,10 @@ import com.google.mlkit.vision.GraphicOverlay.Graphic;
 import com.google.mlkit.vision.GraphicOverlay;
 import com.google.mlkit.vision.objects.DetectedObject;
 import com.google.mlkit.vision.objects.DetectedObject.Label;
+
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
+
 import java.util.Locale;
 
 /** Draw the detected object info in preview. */
@@ -52,7 +57,7 @@ public class ObjectGraphic extends Graphic {
     private final Paint[] boxPaints;
     private final Paint[] textPaints;
     private final Paint[] labelPaints;
-    private GraphicOverlay overlay;
+    private final GraphicOverlay overlay;
     public ObjectGraphic(GraphicOverlay overlay, MyDetectedObject object) {
         super(overlay);
 
@@ -101,26 +106,17 @@ public class ObjectGraphic extends Graphic {
             yLabelOffset -= 2 * lineHeight;
         }
 
-        float w = canvas.getWidth();
-        float h = canvas.getHeight();
-        float sx = w / overlay.getImageWidth();
-        float sy = h / overlay.getImageHeight();
-        // Draws the bounding box.
+//        float w = canvas.getWidth();
+//        float h = canvas.getHeight();
+//        float sx = w / overlay.getImageWidth();
+//        float sy = h / overlay.getImageHeight();
+//        // Draws the bounding box.
         RectF rect = new RectF(object.getBoundingBox());
-        // If the image is flipped, the left will be translated to right, and the right to left.
-//        float x0 = translateX(rect.left);
-//        float x1 = translateX(rect.right);
-//        rect.left = Math.min(x0, x1)*sx;
-//        rect.right = Math.max(x0, x1)*sx;
-//        rect.top = translateY(rect.top)*sy;
-//        rect.bottom = translateY(rect.bottom)*sy;
 
         float x0 = rect.left;
         float x1 = rect.right;
-        rect.left = Math.min(x0, x1) * sx;
-        rect.right = Math.max(x0, x1) * sx;
-        rect.top = rect.top * sy;
-        rect.bottom = (rect.bottom) * sy;
+        rect.left = Math.min(x0, x1);
+        rect.right = Math.max(x0, x1);
 
         canvas.drawRect(rect, boxPaints[colorID]);
 
