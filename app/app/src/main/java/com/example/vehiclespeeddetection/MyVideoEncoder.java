@@ -63,8 +63,7 @@ public class MyVideoEncoder {
         // Create encoder
         encoder = MediaCodec.createEncoderByType("video/avc");
         encoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-        if (outputPath.isEmpty())
-            outputPath = "/output.mp4";
+
 //        outputFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + outputPath);
         outputFile = new File(outputPath);
         muxerStarted = false;

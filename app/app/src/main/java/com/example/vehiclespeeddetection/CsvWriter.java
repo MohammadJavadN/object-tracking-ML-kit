@@ -1,5 +1,6 @@
 package com.example.vehiclespeeddetection;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,6 +11,11 @@ public class CsvWriter {
 
     public static void saveHashMapToCsv(HashMap<Integer, HashMap<Integer, Float>> map, String filePath) {
         try {
+//            File outfile = new File(filePath);
+//            if (!outfile.exists())
+//                if (!outfile.createNewFile())
+//                    return;
+
             FileWriter writer = new FileWriter(filePath);
 
             for (Map.Entry<Integer, HashMap<Integer, Float>> entry : map.entrySet()) {
@@ -52,7 +58,7 @@ public class CsvWriter {
             writer.flush();
             writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 

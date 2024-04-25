@@ -34,49 +34,51 @@ public class RoadLine {
     }
 
     public static void setCirclesTop(View circle1, View circle2, View circle3, View circle4) {
-        circle1.setX(652);
-        circle1.setY(745);
+        circle1.setX(652f / 2102 * viewW);
+        circle1.setY(745f / 1266 * viewH);
 
-        circle2.setX(1171);
-        circle2.setY(712);
+        circle2.setX(1171f / 2102 * viewW);
+        circle2.setY(712f / 1266 * viewH);
 
-        circle3.setX(598);
-        circle3.setY(1544);
+        circle3.setX(598f / 2102 * viewW);
+        circle3.setY(1544f / 1266 * viewH);
 
-        circle4.setX(1486);
-        circle4.setY(1580);
+        circle4.setX(1486f / 2102 * viewW);
+        circle4.setY(1580f / 1266 * viewH);
 
     }
 
     public static void setCirclesSide1(View circle1, View circle2, View circle3, View circle4) {
-        circle1.setX(1653);
-        circle1.setY(1218);
+        circle1.setX(1653f / 2102 * viewW);
+        circle1.setY(1218f / 1266 * viewH);
 
-        circle2.setX(1764);
-        circle2.setY(1331);
+        circle2.setX(1764f / 2102 * viewW);
+        circle2.setY(1331f / 1266 * viewH);
 
-        circle3.setX(105);
-        circle3.setY(1416);
+        circle3.setX(105f / 2102 * viewW);
+        circle3.setY(1416f / 1266 * viewH);
 
-        circle4.setX(380);
-        circle4.setY(1616);
+        circle4.setX(380f / 2102 * viewW);
+        circle4.setY(1616f / 1266 * viewH);
 
     }
 
     public static void setCirclesSide2(View circle1, View circle2, View circle3, View circle4) {
-        circle1.setX(1417);
-        circle1.setY(1074);
+        circle1.setX(1417f / 2102 * viewW);
+        circle1.setY(1074f / 1266 * viewH);
 
-        circle2.setX(1820);
-        circle2.setY(1100);
+        circle2.setX(1820f / 2102 * viewW);
+        circle2.setY(1100f / 1266 * viewH);
 
-        circle3.setX(203);
-        circle3.setY(1282);
+        circle3.setX(203f / 2102 * viewW);
+        circle3.setY(1282f / 1266 * viewH);
 
-        circle4.setX(747);
-        circle4.setY(1552);
+        circle4.setX(747f / 2102 * viewW);
+        circle4.setY(1552f / 1266 * viewH);
 
     }
+
+    private static float viewW, viewH;
 
     public void initializeCircles(View circle1, View circle2, View circle3, View circle4) {
         linePaint.setColor(Color.GREEN);
@@ -86,6 +88,10 @@ public class RoadLine {
         this.circle2 = circle2;
         this.circle3 = circle3;
         this.circle4 = circle4;
+
+        viewW = overlay.getWidth();
+        viewH = overlay.getHeight();
+
         setCirclesTop(circle1, circle2, circle3, circle4);
 //        setCirclesSide1(circle1, circle2, circle3, circle4);
 //        setCirclesSide2(circle1, circle2, circle3, circle4);

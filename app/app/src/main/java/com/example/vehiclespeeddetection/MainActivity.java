@@ -49,7 +49,9 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     public static boolean isBusy = false;
     private static String inVideoPath = "/sdcard/Download/video(1).mp4";
     private static String outVideoPath = "/sdcard/Download/ou_.mp4";
-    private static final String outCSVPath = "/sdcard/Download/out.csv";
+    private static String outCSVPath = "/sdcard/Download/out.csv";
+    private static String outCSVFileName = "out.csv";
+    private static String outVideoFileName = "out.mp4";
     private static VideoCapture cap;
     ActivityResultLauncher<String> filechoser;
     private ScheduledExecutorService scheduledExecutorService;
@@ -57,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     private int frameNum;
     private GraphicOverlay graphicOverlay;
     private View circle1, circle2, circle3, circle4;
+    private boolean isOutAvailable = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,18 +74,25 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         filechoser = registerForActivityResult(
                 new ActivityResultContracts.GetContent(),
                 o -> {
-                    String path = getRealPathFromURI(MainActivity.this, o);
+                    String path = getRealPathFromURI(this, o);
                     if (path == null)
-                        path = MainActivity.inVideoPath;
+                        path = inVideoPath;
                     if (new File(path).exists())
-                        MainActivity.inVideoPath = path;
-                    String[] paths = MainActivity.inVideoPath.split("/");
+                        inVideoPath = path;
+
+                    String[] paths = inVideoPath.split("/");
                     paths[paths.length - 1] = "output.mp4";
-                    MainActivity.outVideoPath = String.join("/", paths);
+                    outVideoPath = String.join("/", paths);
+
+                    paths[paths.length - 1] = "output.csv";
+                    outCSVPath = String.join("/", paths);
+
+
                     Toast.makeText(getApplicationContext(),
                             "out_path: " + outVideoPath,
                             Toast.LENGTH_LONG).show();
                     System.out.println(MainActivity.inVideoPath);
+                    System.out.println(outCSVPath);
 
                     // Start updating frames periodically
                     findViewById(R.id.saveBtn).setVisibility(View.VISIBLE);
@@ -217,8 +227,8 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
         Runnable updateFrameTask = () -> {
             if (!isBusy) {
-                if (graphicOverlay.isValidBitmap)
-                    out.encodeFrame(graphicOverlay.getBitmap());
+//                if (isOutAvailable && graphicOverlay.isValidBitmap)
+//                    out.encodeFrame(graphicOverlay.getBitmap());
 
                 Mat frame = new Mat();
                 boolean ret = cap.read(frame);
@@ -271,10 +281,13 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         int height = (int) cap.get(Videoio.CAP_PROP_FRAME_HEIGHT);
 
         try {
-            out = new MyVideoEncoder(width, height, (int) fps, outVideoPath);
+            File file = new File(this.getExternalFilesDir(null), outVideoFileName);
+            out = new MyVideoEncoder(width, height, (int) fps, file.getPath());
             out.startEncoder();
+            isOutAvailable = true;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT)
+                    .show();
         }
         frameNum = 0;
 
@@ -300,13 +313,10 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         if (scheduledExecutorService != null) {
             scheduledExecutorService.shutdown();
         }
-
-
     }
 
 
     public void saveCsv(View view) {
-//        System.out.println("in public void saveCsv(View view)");
         HashMap<Integer, HashMap<Integer, Float>> ObjectsSpeed = MyDetectedObject.getObjectsSpeed();
         Set<Integer> unnecessaryKey = new HashSet<>();
         for (Integer key : ObjectsSpeed.keySet()) {
@@ -317,6 +327,15 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         for (Integer key : unnecessaryKey) {
             ObjectsSpeed.remove(key);
         }
-        CsvWriter.saveHashMapToCsv(ObjectsSpeed, outCSVPath);
+        try {
+            File file = new File(this.getExternalFilesDir(null), outCSVFileName);
+            CsvWriter.saveHashMapToCsv(ObjectsSpeed, file.getPath());
+            Toast.makeText(getApplicationContext(),
+                    "out_path: " + file.getPath(),
+                    Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG)
+                    .show();
+        }
     }
 }
