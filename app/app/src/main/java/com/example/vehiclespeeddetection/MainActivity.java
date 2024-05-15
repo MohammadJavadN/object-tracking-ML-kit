@@ -3,7 +3,9 @@ package com.example.vehiclespeeddetection;
 import static com.google.mlkit.vision.BitmapUtils.matToBitmap;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -18,6 +20,7 @@ import android.view.View;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -47,11 +50,11 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     private static final int PERMISSION_REQUEST_CODE = 100;
     public static MyVideoEncoder out;
     public static boolean isBusy = false;
-    private static String inVideoPath = "/sdcard/Download/video(1).mp4";
+    private static String inVideoPath = "/sdcard/Download/video.mp4";
     private static String outVideoPath = "/sdcard/Download/ou_.mp4";
     private static String outCSVPath = "/sdcard/Download/out.csv";
-    private static String outCSVFileName = "out.csv";
-    private static String outVideoFileName = "out.mp4";
+    private static final String outCSVFileName = "out.csv";
+    private static final String outVideoFileName = "out.mp4";
     private static VideoCapture cap;
     ActivityResultLauncher<String> filechoser;
     private ScheduledExecutorService scheduledExecutorService;
@@ -60,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     private GraphicOverlay graphicOverlay;
     private View circle1, circle2, circle3, circle4;
     private boolean isOutAvailable = false;
+    public static final int FRAME_STEP = 5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,31 +78,35 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         filechoser = registerForActivityResult(
                 new ActivityResultContracts.GetContent(),
                 o -> {
-                    String path = getRealPathFromURI(this, o);
-                    if (path == null)
-                        path = inVideoPath;
-                    if (new File(path).exists())
-                        inVideoPath = path;
+                        String path = getRealPathFromURI(this, o);
+                        if (path == null)
+                            path = inVideoPath;
+                        if (new File(path).exists())
+                            inVideoPath = path;
 
-                    String[] paths = inVideoPath.split("/");
-                    paths[paths.length - 1] = "output.mp4";
-                    outVideoPath = String.join("/", paths);
+                        String[] paths = inVideoPath.split("/");
+                        paths[paths.length - 1] = "output.mp4";
+                        outVideoPath = String.join("/", paths);
 
-                    paths[paths.length - 1] = "output.csv";
-                    outCSVPath = String.join("/", paths);
+                        paths[paths.length - 1] = "output.csv";
+                        outCSVPath = String.join("/", paths);
 
 
-                    Toast.makeText(getApplicationContext(),
-                            "out_path: " + outVideoPath,
-                            Toast.LENGTH_LONG).show();
-                    System.out.println(MainActivity.inVideoPath);
-                    System.out.println(outCSVPath);
+                        Toast.makeText(getApplicationContext(),
+                                "out_path: " + outVideoPath,
+                                Toast.LENGTH_LONG).show();
+                        System.out.println(MainActivity.inVideoPath);
+                        System.out.println(outCSVPath);
 
-                    // Start updating frames periodically
-                    findViewById(R.id.saveBtn).setVisibility(View.VISIBLE);
-                    findViewById(R.id.browseBtn).setVisibility(View.GONE);
-                    initializeSurface();
-                    startProcess();
+                        // Start updating frames periodically
+                        findViewById(R.id.saveBtn).setVisibility(View.VISIBLE);
+                        findViewById(R.id.browseBtn).setVisibility(View.GONE);
+                        initializeSurface();
+                    try {
+                        startProcess();
+                    } catch (Exception e){
+                        System.out.println(e.toString());
+                    }
                 }
         );
 
@@ -194,13 +202,61 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         System.loadLibrary("opencv_java4");
     }
 
+    int REQUEST_VIDEO_CODE = 1;
     public void browseVideo(android.view.View view) {
-        filechoser.launch("video/*");
+//        filechoser.launch("video/*");
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("video/*"); // Filter to show only videos
+        startActivityForResult(intent, REQUEST_VIDEO_CODE);
+
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_VIDEO_CODE && resultCode == Activity.RESULT_OK) {
+            if (data != null) {
+                Uri selectedVideoUri = data.getData();
+                // Now you have the selected video URI to use in your app
+                String path = getRealPathFromURI(this, selectedVideoUri);
+                if (path == null)
+                    path = inVideoPath;
+                if (new File(path).exists())
+                    inVideoPath = path;
+
+                String[] paths = inVideoPath.split("/");
+                paths[paths.length - 1] = "output.mp4";
+                outVideoPath = String.join("/", paths);
+
+                paths[paths.length - 1] = "output.csv";
+                outCSVPath = String.join("/", paths);
+
+
+                Toast.makeText(getApplicationContext(),
+                        "out_path: " + outVideoPath,
+                        Toast.LENGTH_LONG).show();
+                System.out.println(MainActivity.inVideoPath);
+                System.out.println(outCSVPath);
+
+                // Start updating frames periodically
+                findViewById(R.id.saveBtn).setVisibility(View.VISIBLE);
+                findViewById(R.id.browseBtn).setVisibility(View.GONE);
+                initializeSurface();
+                try {
+                    startProcess();
+                } catch (Exception e){
+                    System.out.println(e.toString());
+                }
+            }
+        }
+    }
+
 
     public String getRealPathFromURI(Context context, Uri contentUri) {
         String filePath = null;
         Cursor cursor = null;
+        System.out.println("### " + contentUri);
         try {
             String[] projection = {MediaStore.Video.Media.DATA};
             cursor = context.getContentResolver().query(contentUri, projection, null, null, null);
@@ -209,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 filePath = cursor.getString(columnIndex);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.toString());;
         } finally {
             if (cursor != null) {
                 cursor.close();
@@ -226,6 +282,10 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
         Runnable updateFrameTask = () -> {
+            if (frameNum % FRAME_STEP != 0){
+                cap.read(new Mat());
+                frameNum++;
+            }
             if (!isBusy) {
 //                if (isOutAvailable && graphicOverlay.isValidBitmap)
 //                    out.encodeFrame(graphicOverlay.getBitmap());
@@ -296,7 +356,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
     private void initialParameters(Bitmap bitmap) {
         graphicOverlay.setImageSourceInfo(bitmap.getWidth(), bitmap.getHeight(), false);
-        trackerProcessor.DISTANCE_TH = (double) bitmap.getWidth() / 10;
+        trackerProcessor.DISTANCE_TH = (double) bitmap.getWidth() / 10 * FRAME_STEP;
         MyDetectedObject.imgWidth = bitmap.getWidth();
         MyDetectedObject.imgHeight = bitmap.getHeight();
     }

@@ -35,7 +35,7 @@ public class MyDetectedObject extends DetectedObject {
     private final Point[] speedVectors = new Point[SPEED_CNT];
     protected RectF location;
     int id = -1;
-    int frameNum, frameNumUpdated;
+    int frameNum, frameNumUpdated, initFrame;
     float coef = 10000f;
     private Rect boundingBox;
     private int speedCnt = 0;
@@ -45,9 +45,12 @@ public class MyDetectedObject extends DetectedObject {
         super(boundingBox, nextId, new ArrayList<>());
 //        this.boundingBox = boundingBox;
         setLocationInt(boundingBox);
+        if (boundingBox.width() > imgWidth * 0.6 || location.height() > 0.6)
+            return;
         id = nextId;
         this.frameNum = frameNum;
         this.frameNumUpdated = frameNum;
+        this.initFrame = frameNum;
         nextId++;
         objectsSpeed.put(id, new HashMap<>());
     }
@@ -101,12 +104,13 @@ public class MyDetectedObject extends DetectedObject {
         speedY /= cnt;
         float speed1 = (float) sqrt(speedX * speedX + speedY * speedY) * 0.6f;
 
-        double val1 = 90 - 40 * log10(900 / (speed1 - 10) - 12);
-        double val2 = 50 * log10(speed1 / 2);
-        speed = (float) min(max(0, val1), val2);
-        if (speed < 10 || ((int) speed) < 20) {
+        double val1 = speed1 < 80 ? 90 - 40 * log10(900 / (speed1 - 10) - 12) : 120;
+        double val2 = 100 * log10(speed1 / 1000) + 215;
+        speed = (float) min(min(max(0, val1), speed1), (int) val2);
+        System.out.println("id: " + id+ ", " + "speeds: " + val1+ ", " + val2+ ", " + speed);
+        if (((int) speed) < 20) {
             speedCnt--;
-            speed = lastSpeed;
+            speed = lastSpeed < 30 ? 0 : lastSpeed * 0.8f;
             return;
         }
 

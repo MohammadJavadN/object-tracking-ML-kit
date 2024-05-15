@@ -92,8 +92,8 @@ public class RoadLine {
         viewW = overlay.getWidth();
         viewH = overlay.getHeight();
 
-        setCirclesTop(circle1, circle2, circle3, circle4);
-//        setCirclesSide1(circle1, circle2, circle3, circle4);
+//        setCirclesTop(circle1, circle2, circle3, circle4);
+        setCirclesSide1(circle1, circle2, circle3, circle4);
 //        setCirclesSide2(circle1, circle2, circle3, circle4);
 
         updateParameters();

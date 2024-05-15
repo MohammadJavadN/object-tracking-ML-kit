@@ -19,7 +19,9 @@ import com.google.mlkit.vision.objects.ObjectDetectorOptionsBase;
 //import org.opencv.tracking.TrackerKCF; // Import the desired tracking algorithm
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ObjectTrackerProcessor extends VisionProcessorBase<List<DetectedObject>> {
 
@@ -51,7 +53,7 @@ public class ObjectTrackerProcessor extends VisionProcessorBase<List<DetectedObj
     @Override
     protected void onSuccess(
             @NonNull List<DetectedObject> results, @NonNull GraphicOverlay graphicOverlay) {
-        frameNum++;
+        frameNum += MainActivity.FRAME_STEP;
         setIDAndSpeed(results);
         removeOutObj();
         for (MyDetectedObject object : prevObjects) {
@@ -65,8 +67,8 @@ public class ObjectTrackerProcessor extends VisionProcessorBase<List<DetectedObj
     }
 
     private void removeOutObj() {
-        prevObjects.removeIf(prevObj -> prevObj.frameNum < frameNum);
-
+        prevObjects.removeIf(prevObj -> prevObj.frameNum < frameNum || prevObj.location.width() > 0.6 || prevObj.location.height() > 0.6);
+//        constantObjects.removeIf(prevObj -> prevObj.frameNum < frameNum || prevObj.location.width() > 0.6 || prevObj.location.height() > 0.6);
     }
 
     private void setIDAndSpeed(List<DetectedObject> currObjects) {
@@ -96,7 +98,7 @@ public class ObjectTrackerProcessor extends VisionProcessorBase<List<DetectedObj
         double d = Math.sqrt(
                 Math.pow(rect1.centerX() - rect2.centerX(), 2) +
                         Math.pow(rect1.centerY() - rect2.centerY(), 2)
-        );// * Math.max(rect1.height()/rect2.height(), rect2.height()/rect1.height()); todo
+        ); // * Math.min(rect1.height()/rect2.height(), rect2.height()/rect1.height()); // todo
 
         return d;
     }
@@ -112,11 +114,12 @@ public class ObjectTrackerProcessor extends VisionProcessorBase<List<DetectedObj
     }
 
     private void addNewObj(DetectedObject object) {
-        prevObjects.add(
+        MyDetectedObject myDetectedObject =
                 new MyDetectedObject(
                         object.getBoundingBox(),
                         frameNum
-                )
-        );
+                );
+        if (myDetectedObject.id != -1)
+            prevObjects.add(myDetectedObject);
     }
 }
