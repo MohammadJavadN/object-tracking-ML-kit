@@ -2,6 +2,7 @@ package com.example.vehiclespeeddetection;
 
 import static com.google.mlkit.vision.BitmapUtils.matToBitmap;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -16,10 +17,10 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -28,15 +29,13 @@ import androidx.core.content.ContextCompat;
 import com.google.mlkit.vision.GraphicOverlay;
 import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions;
 
-import android.Manifest;
-import android.widget.Toast;
-
 import org.opencv.core.Mat;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.Videoio;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
@@ -56,7 +55,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     private static final String outCSVFileName = "out.csv";
     private static final String outVideoFileName = "out.mp4";
     private static VideoCapture cap;
-    ActivityResultLauncher<String> filechoser;
     private ScheduledExecutorService scheduledExecutorService;
     private ObjectTrackerProcessor trackerProcessor;
     private int frameNum;
@@ -74,41 +72,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         init();
 
         graphicOverlay = findViewById(R.id.overlayView);
-
-        filechoser = registerForActivityResult(
-                new ActivityResultContracts.GetContent(),
-                o -> {
-                        String path = getRealPathFromURI(this, o);
-                        if (path == null)
-                            path = inVideoPath;
-                        if (new File(path).exists())
-                            inVideoPath = path;
-
-                        String[] paths = inVideoPath.split("/");
-                        paths[paths.length - 1] = "output.mp4";
-                        outVideoPath = String.join("/", paths);
-
-                        paths[paths.length - 1] = "output.csv";
-                        outCSVPath = String.join("/", paths);
-
-
-                        Toast.makeText(getApplicationContext(),
-                                "out_path: " + outVideoPath,
-                                Toast.LENGTH_LONG).show();
-                        System.out.println(MainActivity.inVideoPath);
-                        System.out.println(outCSVPath);
-
-                        // Start updating frames periodically
-                        findViewById(R.id.saveBtn).setVisibility(View.VISIBLE);
-                        findViewById(R.id.browseBtn).setVisibility(View.GONE);
-                        initializeSurface();
-                    try {
-                        startProcess();
-                    } catch (Exception e){
-                        System.out.println(e.toString());
-                    }
-                }
-        );
 
         circle1 = findViewById(R.id.circle1);
         circle2 = findViewById(R.id.circle2);
@@ -204,7 +167,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
 
     int REQUEST_VIDEO_CODE = 1;
     public void browseVideo(android.view.View view) {
-//        filechoser.launch("video/*");
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("video/*"); // Filter to show only videos
@@ -219,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             if (data != null) {
                 Uri selectedVideoUri = data.getData();
                 // Now you have the selected video URI to use in your app
-                String path = getRealPathFromURI(this, selectedVideoUri);
+                String path = FilePathHelper.getPathFromUri(this, selectedVideoUri);
                 if (path == null)
                     path = inVideoPath;
                 if (new File(path).exists())
@@ -250,28 +212,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 }
             }
         }
-    }
-
-
-    public String getRealPathFromURI(Context context, Uri contentUri) {
-        String filePath = null;
-        Cursor cursor = null;
-        System.out.println("### " + contentUri);
-        try {
-            String[] projection = {MediaStore.Video.Media.DATA};
-            cursor = context.getContentResolver().query(contentUri, projection, null, null, null);
-            if (cursor != null && cursor.moveToFirst()) {
-                int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA);
-                filePath = cursor.getString(columnIndex);
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString());;
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-        return filePath;
     }
 
     private void startProcess() {
